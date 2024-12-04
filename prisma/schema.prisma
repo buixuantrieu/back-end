@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @unique
+  userName        String   @unique
+  email           String   @unique
+  password        String
+  verifyCode      Int
+  status          Int      @default(1)
+  role            Int      @default(1)
+  isLogin         Boolean  @default(false)
+  verifyExpiresAt DateTime
+  lastLogin       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  Profile         Profile?
+
+  @@map("users")
+}
+
+model Profile {
+  userId     String    @id
+  avatar     String?
+  fullName   String?
+  address    String?
+  cityId     Int?
+  districtId Int?
+  wardId     Int?
+  phone      String?
+  gender     Int?
+  dob        DateTime? @db.Date
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  User     User      @relation(fields: [userId], references: [id])
+  City     City?     @relation(fields: [cityId], references: [id])
+  District District? @relation(fields: [districtId], references: [id])
+  Ward     Ward?     @relation(fields: [wardId], references: [id])
+
+  @@map("profiles")
+}
+
+model City {
+  id        Int        @id
+  name      String     @db.VarChar(64)
+  districts District[]
+  profiles  Profile[]
+
+  @@map("cities")
+}
+
+model District {
+  id       Int       @id
+  cityId   Int
+  name     String    @db.VarChar(64)
+  Province City      @relation(fields: [cityId], references: [id])
+  wards    Ward[]
+  profiles Profile[]
+
+  @@map("districts")
+}
+
+model Ward {
+  id         Int       @id
+  districtId Int
+  name       String    @db.VarChar(64)
+  District   District  @relation(fields: [districtId], references: [id])
+  profiles   Profile[]
+
+  @@map("wards")
+}
