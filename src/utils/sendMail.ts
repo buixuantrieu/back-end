@@ -44,7 +44,7 @@ const sendMailRegister = async (email: string, verifyCode: number) => {
       </div>
 
       <div style="margin-top: 30px; text-align: center;">
-        <a href='http://192.168.1.14:3000/verify-account?email=${email}' style="display: inline-block; padding: 12px 20px; background-color: #8F7DE1; color: #FFFFFF; text-decoration: none; font-weight: bold; border-radius: 6px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: background-color 0.3s;">
+        <a href='http://${process.env.HOST_FRONTEND}:3000/verify-account?email=${email}' style="display: inline-block; padding: 12px 20px; background-color: #8F7DE1; color: #FFFFFF; text-decoration: none; font-weight: bold; border-radius: 6px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: background-color 0.3s;">
           Xác nhận ngay
         </a>
       </div>
