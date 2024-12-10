@@ -3,7 +3,7 @@ import { randomOTP } from "@utils/randomNumber";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import jwt from "jsonwebtoken";
-import { IRegister, IUpdateStatusUser, IVerifyAccount } from "types/interfaces";
+import { ILogin, IRegister, IUpdateStatusUser, IVerifyAccount } from "types/interfaces";
 import { sendMailRegister } from "@utils/sendMail";
 import { STATUS_USER } from "types/enum";
 
@@ -36,7 +36,7 @@ const updateStatusUser = async ({ id, status }: IUpdateStatusUser) => {
   });
 };
 const createAccessToken = async (data: { id: string }) => {
-  const accessToken = jwt.sign(data, process.env.PRIMARY_KEY_ACCESS_TOKEN as string, { expiresIn: "1h" });
+  const accessToken = jwt.sign(data, process.env.PRIMARY_KEY_ACCESS_TOKEN as string, { expiresIn: "30m" });
   return accessToken;
 };
 const createRefreshToken = async (data: { id: string }) => {
@@ -124,4 +124,63 @@ const deleteUserUnVerify = async () => {
     },
   });
 };
-export { registerUser, fetchExpiryTime, verifyAccount, deleteUserUnVerify };
+const checkUserExists = async (data: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        {
+          email: data,
+        },
+        {
+          userName: data,
+        },
+      ],
+    },
+  });
+  if (user) {
+    return user;
+  }
+  return false;
+};
+
+const checkPassword = async (password: string, hashPassword: string) => {
+  const checkPass = bcrypt.compareSync(password, hashPassword);
+  return checkPass;
+};
+
+const loginUser = async ({ userName, password }: ILogin) => {
+  const user = await checkUserExists(userName);
+  if (user) {
+    const checkPass = await checkPassword(password, user.password);
+    if (checkPass) {
+      const accessToken = await createAccessToken({ id: user.id });
+      const refreshToken = await createRefreshToken({ id: user.id });
+      return {
+        accessToken,
+        refreshToken,
+        role: user.role,
+      };
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+};
+
+const updateAccessToken = async (refreshToken: string) => {
+  const decoded = jwt.verify(refreshToken, process.env.PRIMARY_KEY_REFRESH_TOKEN as string) as { id: string };
+  const user = await prisma.user.findFirst({
+    where: {
+      id: decoded.id,
+    },
+  });
+  if (user) {
+    const accessToken = await createAccessToken({ id: user.id });
+    return { accessToken };
+  } else {
+    return false;
+  }
+};
+
+export { registerUser, fetchExpiryTime, verifyAccount, deleteUserUnVerify, loginUser, updateAccessToken };

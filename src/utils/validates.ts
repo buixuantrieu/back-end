@@ -1,3 +1,4 @@
+import { IRegister } from "types/interfaces";
 import { z } from "zod";
 
 const schemaRegister = z.object({
@@ -16,7 +17,7 @@ const schemaRegister = z.object({
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/, "Mật khẩu yếu!"),
 });
 
-const validateRegister = (data: any) => {
+const validateRegister = (data: IRegister) => {
   try {
     const validatedRegister = schemaRegister.parse(data);
     return validatedRegister;
