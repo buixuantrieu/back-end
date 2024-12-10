@@ -31,7 +31,6 @@ app.use("/api/v1/user", userRouter);
 cron.schedule("*/3 * * * *", async () => {
   try {
     await deleteUserUnVerify();
-    console.log("Đã xóa");
   } catch (error) {
     console.log(error);
   }

@@ -9,5 +9,16 @@ const getSingleUserByEmail = (email: string) => {
   return user;
 };
 
+const getUserInfo = async (id: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      id,
+    },
+    include: {
+      Profile: true,
+    },
+  });
+  return user;
+};
 
-export { getSingleUserByEmail };
+export { getSingleUserByEmail, getUserInfo };
